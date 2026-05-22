@@ -1,6 +1,7 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
+import { Types } from "mongoose";
 
 import { connectToDatabase } from "@/lib/database";
 import Category from "@/lib/database/models/category.model";
@@ -57,6 +58,11 @@ export async function getEventById(eventId: string) {
   try {
     await connectToDatabase();
 
+    // Validate if eventId is a valid MongoDB ObjectId
+    if (!Types.ObjectId.isValid(eventId)) {
+      throw new Error("Invalid event ID");
+    }
+
     const event = await populateEvent(Event.findById(eventId));
 
     if (!event) throw new Error("Event not found");
@@ -71,6 +77,11 @@ export async function getEventById(eventId: string) {
 export async function updateEvent({ userId, event, path }: UpdateEventParams) {
   try {
     await connectToDatabase();
+
+    // Validate if event._id is a valid MongoDB ObjectId
+    if (!Types.ObjectId.isValid(event._id)) {
+      throw new Error("Invalid event ID");
+    }
 
     const eventToUpdate = await Event.findById(event._id);
     if (!eventToUpdate || eventToUpdate.organizer.toHexString() !== userId) {
@@ -94,6 +105,11 @@ export async function updateEvent({ userId, event, path }: UpdateEventParams) {
 export async function deleteEvent({ eventId, path }: DeleteEventParams) {
   try {
     await connectToDatabase();
+
+    // Validate if eventId is a valid MongoDB ObjectId
+    if (!Types.ObjectId.isValid(eventId)) {
+      throw new Error("Invalid event ID");
+    }
 
     const deletedEvent = await Event.findByIdAndDelete(eventId);
     if (deletedEvent) revalidatePath(path);

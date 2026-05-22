@@ -12,6 +12,7 @@ import Order from "../database/models/oder.model";
 import { connectToDatabase } from "../database";
 import Event from "../database/models/event.model";
 import { ObjectId } from "mongodb";
+import { Types } from "mongoose";
 import User from "../database/models/user.model";
 export const checkoutOrder = async (order: CheckoutOrderParams) => {
   const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!);
@@ -70,6 +71,10 @@ export async function getOrdersByEvent({
     await connectToDatabase();
 
     if (!eventId) throw new Error("Event ID is required");
+    // Validate if eventId is a valid MongoDB ObjectId
+    if (!Types.ObjectId.isValid(eventId)) {
+      throw new Error("Invalid event ID");
+    }
     const eventObjectId = new ObjectId(eventId);
 
     const orders = await Order.aggregate([
@@ -150,9 +155,8 @@ export async function getOrdersByUser({
         },
       });
 
-    const ordersCount = await Order.distinct("event._id").countDocuments(
-      conditions
-    );
+    const ordersCount =
+      await Order.distinct("event._id").countDocuments(conditions);
 
     return {
       data: JSON.parse(JSON.stringify(orders)),
