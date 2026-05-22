@@ -80,7 +80,7 @@ export async function updateEvent({ userId, event, path }: UpdateEventParams) {
     const updatedEvent = await Event.findByIdAndUpdate(
       event._id,
       { ...event, category: event.categoryId },
-      { new: true }
+      { new: true },
     );
     revalidatePath(path);
 
@@ -135,11 +135,15 @@ export async function getAllEvents({
     const eventsCount = await Event.countDocuments(conditions);
 
     return {
-      data: JSON.parse(JSON.stringify(events)),
+      data: JSON.parse(JSON.stringify(events)) || [],
       totalPages: Math.ceil(eventsCount / limit),
     };
   } catch (error) {
     handleError(error);
+    return {
+      data: [],
+      totalPages: 0,
+    };
   }
 }
 
@@ -164,11 +168,15 @@ export async function getEventsByUser({
     const eventsCount = await Event.countDocuments(conditions);
 
     return {
-      data: JSON.parse(JSON.stringify(events)),
+      data: JSON.parse(JSON.stringify(events)) || [],
       totalPages: Math.ceil(eventsCount / limit),
     };
   } catch (error) {
     handleError(error);
+    return {
+      data: [],
+      totalPages: 0,
+    };
   }
 }
 
@@ -196,10 +204,14 @@ export async function getRelatedEventsByCategory({
     const eventsCount = await Event.countDocuments(conditions);
 
     return {
-      data: JSON.parse(JSON.stringify(events)),
+      data: JSON.parse(JSON.stringify(events)) || [],
       totalPages: Math.ceil(eventsCount / limit),
     };
   } catch (error) {
     handleError(error);
+    return {
+      data: [],
+      totalPages: 0,
+    };
   }
 }
